@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/njovanovic-se/url-shortner/models"
 	"github.com/njovanovic-se/url-shortner/shortener"
 	"github.com/njovanovic-se/url-shortner/store"
 )
@@ -21,7 +23,11 @@ func CreateShortUrl(c *gin.Context) {
 	}
 
 	shortUrl := shortener.GenerateShortLink(creationRequest.LongUrl, creationRequest.UserId)
-	store.SaveUrlMapping(shortUrl, creationRequest.LongUrl, creationRequest.UserId)
+	store.Save(c.Request.Context(), &models.Shortener{
+		ShortUrl:    shortUrl,
+		OriginalUrl: creationRequest.LongUrl,
+		UserId:      creationRequest.UserId,
+	})
 
 	host := "http://localhost:9808/"
 	c.JSON(200, gin.H{
@@ -31,7 +37,10 @@ func CreateShortUrl(c *gin.Context) {
 }
 
 func HandlerShortUrlRedirect(c *gin.Context) {
-	shortUrl := c.Param("shortUrl")
-	initialUrl := store.GetInitialUrl(shortUrl)
+	shortUrl := c.Param("short-url")
+	initialUrl, err := store.Load(c.Request.Context(), shortUrl)
+	if err != nil {
+		fmt.Printf("failed to load data for short URL provided: %v", err)
+	}
 	c.Redirect(302, initialUrl)
 }

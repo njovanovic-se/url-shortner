@@ -39,7 +39,7 @@ func SaveUrlMapping(shortUrl string, originalUrl string, userId string) {
 	if err != nil {
 		panic(fmt.Sprintf("\nFailed to save shortened url: error message: {%s} - original url {%s}; shortened url {%s}", err, originalUrl, shortUrl))
 	}
-	fmt.Print("\nSuccessfully saved shortened url")
+	fmt.Print("\nSuccessfully saved shortened url\n")
 }
 
 func GetInitialUrl(shortUrl string) string {
