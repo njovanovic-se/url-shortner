@@ -34,12 +34,13 @@ func InitializeStore() *StoreService {
 	return storeService
 }
 
-func SaveUrlMapping(shortUrl string, originalUrl string, userId string) {
+func SaveUrlMapping(shortUrl string, originalUrl string, userId string) error {
 	err := storeService.redisClient.Set(ctx, shortUrl, originalUrl, CacheDuration).Err()
 	if err != nil {
-		panic(fmt.Sprintf("\nFailed to save shortened url: error message: {%s} - original url {%s}; shortened url {%s}", err, originalUrl, shortUrl))
+		return fmt.Errorf("\nFailed to save shortened url: error message: {%s} - original url {%s}; shortened url {%s}", err, originalUrl, shortUrl)
 	}
 	fmt.Print("\nSuccessfully saved shortened url\n")
+	return nil
 }
 
 func GetInitialUrl(shortUrl string) string {

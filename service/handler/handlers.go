@@ -23,11 +23,21 @@ func CreateShortUrl(c *gin.Context) {
 	}
 
 	shortUrl := shortener.GenerateShortLink(creationRequest.LongUrl, creationRequest.UserId)
-	store.Save(c.Request.Context(), &models.Shortener{
+	err := store.Save(c.Request.Context(), &models.Shortener{
 		ShortUrl:    shortUrl,
 		OriginalUrl: creationRequest.LongUrl,
 		UserId:      creationRequest.UserId,
 	})
+
+	if err != nil {
+		panic(fmt.Errorf("failed to save url for userID: %s: %w", creationRequest.UserId, err))
+	}
+
+	err = store.SaveUrlMapping(shortUrl, creationRequest.LongUrl, creationRequest.UserId)
+
+	if err != nil {
+		panic(fmt.Errorf("failed to save url to temporary cache: %w", err))
+	}
 
 	host := "http://localhost:9808/"
 	c.JSON(200, gin.H{
@@ -38,9 +48,15 @@ func CreateShortUrl(c *gin.Context) {
 
 func HandlerShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("short-url")
-	initialUrl, err := store.Load(c.Request.Context(), shortUrl)
+	original_url := store.GetInitialUrl(shortUrl)
+
+	if original_url != "" {
+		c.Redirect(302, original_url)
+	}
+
+	original_url, err := store.Load(c.Request.Context(), shortUrl)
 	if err != nil {
 		fmt.Printf("failed to load data for short URL provided: %v", err)
 	}
-	c.Redirect(302, initialUrl)
+	c.Redirect(302, original_url)
 }
