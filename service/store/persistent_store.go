@@ -34,8 +34,6 @@ func Save(ctx context.Context, shortener *models.Shortener) error {
 		shortener.OriginalUrl,
 		shortener.ShortUrl).Scan(&shortener.ID)
 
-	SaveUrlMapping(shortener.ShortUrl, shortener.OriginalUrl, shortener.UserId)
-
 	if err != nil {
 		return fmt.Errorf("failed to store new short link for userID: %s", shortener.UserId)
 	}
@@ -44,14 +42,6 @@ func Save(ctx context.Context, shortener *models.Shortener) error {
 }
 
 func Load(ctx context.Context, short_link string) (string, error) {
-
-	fmt.Printf("TEST TEST TEST %s", short_link)
-	original_url := GetInitialUrl(short_link)
-
-	if original_url != "" {
-		return original_url, nil
-	}
-
 	query := `SELECT user_id, original_link, short_link FROM links
 			WHERE short_link = $1`
 
