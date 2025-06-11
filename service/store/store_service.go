@@ -43,13 +43,12 @@ func SaveUrlMapping(shortUrl string, originalUrl string, userId string) error {
 	return nil
 }
 
-func GetInitialUrl(shortUrl string) string {
+func GetInitialUrl(shortUrl string) (string, error) {
 	result, err := storeService.redisClient.Get(ctx, shortUrl).Result()
-	fmt.Printf("\n{%s}", err)
 	if err != nil {
-		panic(fmt.Sprintf("\nFailed to retrieve original url: error message: {%s} - shortened url {%s}", err, shortUrl))
+		return "", fmt.Errorf("\nFailed to retrieve original url: error message: {%s} - shortened url {%s}", err, shortUrl)
 	}
-	return result
+	return result, nil
 }
 
 const CacheDuration = 6 * time.Hour
