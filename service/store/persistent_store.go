@@ -29,12 +29,12 @@ func Save(ctx context.Context, shortener *models.Shortener) error {
 	query := `INSERT INTO links (user_id, original_link, short_link)
 			VALUES ($1, $2, $3)`
 
-	err := repo.db.QueryRowContext(ctx, query,
+	row := repo.db.QueryRowContext(ctx, query,
 		shortener.UserId,
 		shortener.OriginalUrl,
 		shortener.ShortUrl).Scan(&shortener.ID)
 
-	if err != nil {
+	if row == nil {
 		return fmt.Errorf("failed to store new short link for userID: %s", shortener.UserId)
 	}
 

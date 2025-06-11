@@ -48,13 +48,14 @@ func CreateShortUrl(c *gin.Context) {
 
 func HandlerShortUrlRedirect(c *gin.Context) {
 	shortUrl := c.Param("short-url")
-	original_url := store.GetInitialUrl(shortUrl)
+	original_url, err := store.GetInitialUrl(shortUrl)
 
-	if original_url != "" {
-		c.Redirect(302, original_url)
+	if err != nil {
+		fmt.Printf("failed to load data for short URL provided: %v", err)
 	}
 
-	original_url, err := store.Load(c.Request.Context(), shortUrl)
+	c.Redirect(302, original_url)
+	original_url, err = store.Load(c.Request.Context(), shortUrl)
 	if err != nil {
 		fmt.Printf("failed to load data for short URL provided: %v", err)
 	}
